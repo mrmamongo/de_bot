@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+  database:
+    image: postgres:14-alpine3.16
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: doeba_bot
+    ports:
+      - "5432:5432"
+  #    volumes:
+  #      - ./data:/var/lib/postgresql/data
+
+  bot:
+    build: .
+    restart: always
+    environment:
+      DOEBA_BOT_DATABASE_URL: postgresql+asyncpg://postgres:postgres@database:5432/doeba_bot
+      DOEBA_BOT_REDIS_URL: redis://redis:6379
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
