@@ -1,5 +1,5 @@
-from aiogram.dispatcher.fsm.state import State, StatesGroup
+from aiogram.dispatcher.fsm.state import StatesGroup, State
 
 
 class DoebaState(StatesGroup):
-    doeba = State()
+    writing = State

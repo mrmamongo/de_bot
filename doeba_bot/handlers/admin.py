@@ -1,20 +1,26 @@
-from aiogram import Router, types, Bot
+from aiogram import Router, types, Bot, F
 from aiogram.dispatcher.filters.command import CommandStart, Command
 from aiogram.dispatcher.filters.text import Text
+from aiogram.dispatcher.fsm.context import FSMContext
 from aiogram.types import URLInputFile
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from doeba_bot.callback_data.doeba_callback import DoebaCallback
 from doeba_bot.config import settings
 from doeba_bot.models.user import Doc, Comment
+from doeba_bot.states.doeba import DoebaState
 
 router = Router()
+
+help_message = "Чтобы получить список документов, напиши /poll"
 
 
 @router.message(CommandStart())
 async def start(message: types.Message):
-    await message.answer(f"Пивет, {message.from_user.username}! Я Бот-доёба, помогу тебе доебаться до студентов :)")
+    await message.answer(
+        f"Пивет, {message.from_user.username}! Я Бот-доёба, помогу тебе доебаться до студентов :) {help_message}")
 
 
 @router.message(Command(commands=["poll"]))
@@ -53,14 +59,45 @@ async def doc(message: types.Message, db: AsyncSession, bot: Bot):
     await bot.send_message(
         chat_id=message.from_user.id,
         text=f"Доебаться?",
-        reply_markup=types.ReplyKeyboardMarkup(
-            keyboard=[
+        reply_markup=types.InlineKeyboardMarkup(
+            inline_keyboard=[
                 [
-                    types.KeyboardButton(text="Да", callback_data="yes"),
-                    types.KeyboardButton(text="Нет", callback_data="no"),
+                    types.KeyboardButton(text="Ды",
+                                         callback_data=DoebaCallback(result="yep", message_id=message.message_id,
+                                                                     chat_id=message.from_user.id).pack()),
+                    types.KeyboardButton(text="Ни",
+                                         callback_data=DoebaCallback(result="nop", message_id=message.message_id,
+                                                                     chat_id=message.from_user.id).pack()),
                 ]
             ],
-            resize_keyboard=True,
             one_time_keyboard=True,
+            resize_keyboard=True
         )
     )
+
+
+@router.callback_query(DoebaCallback.filter(F.result == "yep"))
+async def write_doeba(query: types.CallbackQuery, state: FSMContext, bot: Bot):
+    await bot.send_message(chat_id=query.from_user.id, text="Напиши свою доёбу")
+    await state.set_state(DoebaState.writing)
+    # await bot.send_message(chat_id=query.from_user.id, text="Ну и ладно")
+
+
+@router.callback_query(DoebaCallback.filter(F.result == "nop"))
+async def no_doeba(query: types.CallbackQuery, callback_data: DoebaCallback, bot: Bot):
+    await bot.send_message(chat_id=query.from_user.id, text="Ну и ладно")
+    await bot.delete_message(message_id=int(callback_data.message_id), chat_id=callback_data.chat_id)
+
+
+@router.message(DoebaState.writing)
+async def save_doeba(message: types.Message, db: AsyncSession, state: FSMContext):
+    await message.answer(f"Доёба: {message.text}")
+    new_comment = Comment(text=message.text, author_id=message.from_user.id, doc_id=(await state.get_data())["doc_id"])
+    db.add(new_comment)
+    await db.commit()
+    await state.clear()
+
+
+@router.message()
+async def msg(message: types.Message):
+    await message.answer(help_message)

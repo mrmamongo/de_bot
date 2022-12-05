@@ -19,9 +19,9 @@ class AdminFilter(BaseFilter):
 
     async def __call__(self,
                        message: types.Message) -> bool:
-        async with self.connection.begin():
-            user = (await self.connection.execute(select(User.is_admin).where(User.id.__eq__(message.from_user.id)))) \
-                .one_or_none()
-            if user is None:
-                return False
-            return user.is_admin
+        # async with self.connection.begin():
+        user = (await self.connection.execute(select(User.is_admin).where(User.id.__eq__(message.from_user.id)))) \
+            .one_or_none()
+        if user is None:
+            return False
+        return user.is_admin
