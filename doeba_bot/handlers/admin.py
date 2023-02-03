@@ -1,7 +1,7 @@
 from aiogram import Router, types, Bot, F
-from aiogram.dispatcher.filters.command import CommandStart, Command
-from aiogram.dispatcher.filters.text import Text
-from aiogram.dispatcher.fsm.context import FSMContext
+from aiogram.filters.command import CommandStart, Command
+from aiogram.filters.text import Text
+from aiogram.fsm.context import FSMContext
 from aiogram.types import URLInputFile
 from loguru import logger
 from sqlalchemy import select
@@ -34,7 +34,7 @@ async def msg(message: types.Message, db: AsyncSession):
     )
 
 
-@router.message(Text(text_startswith="/doc_"))
+@router.message(Text(startswith="/doc_"))
 async def doc(message: types.Message, db: AsyncSession, bot: Bot):
     doc_id = int(message.text.split("_")[1])
     d: Doc | None = (await db.execute(select(Doc).where(Doc.id == doc_id))).one_or_none()

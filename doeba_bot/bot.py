@@ -1,8 +1,8 @@
 import aiojobs as aiojobs
 import aioredis as aioredis
 from aiogram import Bot, Dispatcher
-from aiogram.dispatcher.fsm.storage.memory import MemoryStorage
-from aiogram.dispatcher.fsm.storage.redis import RedisStorage
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.storage.redis import RedisStorage
 from aiohttp import web
 from aioredis import Redis
 from loguru import logger

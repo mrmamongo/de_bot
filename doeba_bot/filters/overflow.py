@@ -1,7 +1,7 @@
 from typing import Iterator
 
 from aiogram import F
-from aiogram.dispatcher.filters import BaseFilter
+from aiogram.filters import BaseFilter
 from aiogram.types import TelegramObject
 from pyrate_limiter import RequestRate, Limiter, BucketFullException
 

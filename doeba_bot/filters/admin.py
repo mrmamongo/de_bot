@@ -1,5 +1,5 @@
 from aiogram import types
-from aiogram.dispatcher.filters import BaseFilter
+from aiogram.filters import BaseFilter
 from pydantic.fields import Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncConnection

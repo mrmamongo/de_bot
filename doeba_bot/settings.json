@@ -1,7 +1,0 @@
-{
-  "DATABASE_URL": "postgresql+asyncpg://postgres:postgres@localhost:5432",
-  "web": {
-    "host": "localhost",
-    "port": 5000
-  }
-}

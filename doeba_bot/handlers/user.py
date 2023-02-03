@@ -1,5 +1,5 @@
 from aiogram import Router, types, F
-from aiogram.dispatcher.filters.command import CommandStart
+from aiogram.filters.command import CommandStart
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
